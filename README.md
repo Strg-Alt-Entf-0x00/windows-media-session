@@ -1,6 +1,6 @@
 # Windows Media Session
 
-[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/KernelMeltdown/windows-media-session)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/Strg-Alt-Entf-0x00/windows-media-session)
 [![License](https://img.shields.io/badge/license-Public%20Domain-green.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/C++-20-orange.svg)](https://isocpp.org/)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)

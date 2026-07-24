@@ -3,7 +3,7 @@
 # ==============================================================================
 # Description: Framework-agnostic C++ library for Windows Media Session
 # License:     MIT
-# Author:      AI-Projects Team
+# Author:      Strg-Alt-Entf-0x00
 # Created:     2026-06-22
 # ==============================================================================
 
