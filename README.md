@@ -9,13 +9,13 @@ C++20 library for Windows Media Session integration with system-wide media trans
 
 ## Features
 
-- 🎵 **System Media Controls** - Integrates with Windows media transport controls
-- ⌨️ **Media Keys** - Responds to hardware media keys (Play, Pause, Next, Previous)
-- 📱 **SMTC Integration** - SystemMediaTransportControls for Windows 10/11
-- 🖼️ **Thumbnail Support** - Display album art and track information
-- 📊 **Playback Timeline** - Track position and duration display
-- 🔄 **State Management** - Automatic playback state synchronization
-- 🎯 **Modern C++20** - RAII, coroutines, and type-safe API
+- **System Media Controls** - Integrates with Windows media transport controls
+- ⌨**Media Keys** - Responds to hardware media keys (Play, Pause, Next, Previous)
+- **SMTC Integration** - SystemMediaTransportControls for Windows 10/11
+- **Thumbnail Support** - Display album art and track information
+- **Playback Timeline** - Track position and duration display
+- **State Management** - Automatic playback state synchronization
+- **Modern C++20** - RAII, coroutines, and type-safe API
 
 ## Requirements
 
