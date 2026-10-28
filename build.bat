@@ -42,9 +42,9 @@ if "%1"=="debug" (
 REM ==============================================================================
 REM Logging Setup
 REM ==============================================================================
-if not exist logs mkdir logs
+if not exist .logs mkdir .logs
 for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set TS=%%i
-set LOG=logs\%TS%_build.log
+set LOG=.logs\%TS%_build.log
 
 REM ==============================================================================
 REM CMake Configuration Phase

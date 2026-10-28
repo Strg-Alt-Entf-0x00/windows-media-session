@@ -12,8 +12,41 @@
 
 #include <winrt/base.h>  // For winrt::init_apartment
 #include <iostream>      // For std::cout, std::cerr
+#include <mutex>         // For std::once_flag, std::call_once
 
 namespace windows_platform {
+
+// ==============================================================================
+// WinRT Apartment Initialization (Singleton)
+// ==============================================================================
+static bool ensureWinRTInitialized() {
+    static std::once_flag initFlag;
+    static bool initSuccess = false;
+    
+    std::call_once(initFlag, []() {
+        try {
+            winrt::init_apartment();
+            std::cout << "[MediaSession] WinRT apartment initialized\n";
+            initSuccess = true;
+        } catch (const winrt::hresult_error& e) {
+            // RPC_E_CHANGED_MODE (-2147417850) means COM already initialized in different mode
+            // This is acceptable - WinRT can work with existing COM initialization
+            if (e.code() == static_cast<int32_t>(0x80010106)) {  // RPC_E_CHANGED_MODE
+                std::cout << "[MediaSession] WinRT: COM apartment already initialized (using existing)\n";
+                initSuccess = true;
+            } else {
+                std::cerr << "[MediaSession] ERROR: WinRT initialization failed: " 
+                          << e.code() << " - " << winrt::to_string(e.message()) << "\n";
+                initSuccess = false;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[MediaSession] ERROR: WinRT initialization exception: " << e.what() << "\n";
+            initSuccess = false;
+        }
+    });
+    
+    return initSuccess;
+}
 
 // ==============================================================================
 // Factory Method
@@ -30,15 +63,10 @@ std::unique_ptr<MediaSession> MediaSession::create(HWND hwnd) {
         
         std::cout << "[MediaSession] Creating with HWND: " << hwnd << "\n";
         
-        // Initialize WinRT (must be called before any WinRT usage)
-        // Note: This may fail if COM apartment is already initialized
-        try {
-            winrt::init_apartment();
-            std::cout << "[MediaSession] WinRT apartment initialized\n";
-        } catch (const winrt::hresult_error& e) {
-            std::cerr << "[MediaSession] WARNING: WinRT init failed (already initialized?): " 
-                      << e.code() << "\n";
-            // Continue anyway - might be OK if already initialized
+        // Ensure WinRT is initialized (singleton, thread-safe)
+        if (!ensureWinRTInitialized()) {
+            std::cerr << "[MediaSession] ERROR: WinRT initialization failed\n";
+            return nullptr;
         }
         
         // Create MediaSession instance (unique_ptr with private constructor)
