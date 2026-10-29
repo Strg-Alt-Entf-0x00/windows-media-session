@@ -13,34 +13,44 @@
 #include <winrt/base.h>  // For winrt::init_apartment
 #include <iostream>      // For std::cout, std::cerr
 #include <mutex>         // For std::once_flag, std::call_once
+#include <combaseapi.h>  // For CoGetApartmentType
 
 namespace windows_platform {
 
 // ==============================================================================
-// WinRT Apartment Initialization (Singleton)
+// WinRT Apartment Initialization (Singleton with proactive COM detection)
 // ==============================================================================
 static bool ensureWinRTInitialized() {
     static std::once_flag initFlag;
     static bool initSuccess = false;
     
     std::call_once(initFlag, []() {
-        try {
-            winrt::init_apartment();
-            std::cout << "[MediaSession] WinRT apartment initialized\n";
-            initSuccess = true;
-        } catch (const winrt::hresult_error& e) {
-            // RPC_E_CHANGED_MODE (-2147417850) means COM already initialized in different mode
-            // This is acceptable - WinRT can work with existing COM initialization
-            if (e.code() == static_cast<int32_t>(0x80010106)) {  // RPC_E_CHANGED_MODE
-                std::cout << "[MediaSession] WinRT: COM apartment already initialized (using existing)\n";
+        // Check if COM is already initialized
+        APTTYPE aptType;
+        APTTYPEQUALIFIER aptQualifier;
+        HRESULT hr = CoGetApartmentType(&aptType, &aptQualifier);
+        
+        if (hr == CO_E_NOTINITIALIZED) {
+            // COM not yet initialized - we initialize it
+            try {
+                winrt::init_apartment();
+                std::cout << "[MediaSession] WinRT apartment initialized\n";
                 initSuccess = true;
-            } else {
+            } catch (const winrt::hresult_error& e) {
                 std::cerr << "[MediaSession] ERROR: WinRT initialization failed: " 
                           << e.code() << " - " << winrt::to_string(e.message()) << "\n";
                 initSuccess = false;
+            } catch (const std::exception& e) {
+                std::cerr << "[MediaSession] ERROR: WinRT initialization exception: " << e.what() << "\n";
+                initSuccess = false;
             }
-        } catch (const std::exception& e) {
-            std::cerr << "[MediaSession] ERROR: WinRT initialization exception: " << e.what() << "\n";
+        } else if (SUCCEEDED(hr)) {
+            // COM already initialized - perfect, we can use it
+            std::cout << "[MediaSession] Using existing COM apartment\n";
+            initSuccess = true;
+        } else {
+            // Unexpected error checking COM state
+            std::cerr << "[MediaSession] ERROR: Failed to query COM apartment state: " << std::hex << hr << "\n";
             initSuccess = false;
         }
     });
